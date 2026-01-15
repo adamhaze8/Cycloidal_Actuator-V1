@@ -1,0 +1,21 @@
+@"
+# --- Build & Temp Files ---
+*.hex
+*.elf
+*.bin
+build/
+.vscode/
+*.o
+*.d
+
+# --- System Junk ---
+Thumbs.db
+.DS_Store
+
+# --- Data Logs (Stop tracking these) ---
+*.csv
+*.log
+
+# --- Excel Temp Files ---
+~$*.xlsx
+"@ | Out-File -Encoding utf8 .gitignore
