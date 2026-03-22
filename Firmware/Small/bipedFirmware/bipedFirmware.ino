@@ -23,8 +23,6 @@ LowsideCurrentSense currentSense = LowsideCurrentSense(0.003f, -64.0f / 7.0f, A_
 const float GEAR_RATIO = 20.0f;
 const float MOTOR_KT = 0.205f;
 
-float boot_wrap_correction = 0.0f;
-
 // --- 4. LOW-PASS FILTERS ---
 // Tf = Time constant in seconds.
 // A Tf of 0.01 means it takes 10ms to reach ~63% of the true value.
@@ -84,10 +82,6 @@ void setup() {
     joint_encoder.update();
     delay(1);
   }
-
-  if (joint_encoder.getAngle() > PI) {
-    boot_wrap_correction = TWO_PI;
-  }
 }
 
 void loop() {
@@ -95,7 +89,7 @@ void loop() {
 
   // TRUE KINEMATICS
   joint_encoder.update();
-  float continuous_enc_angle = joint_encoder.getAngle() - boot_wrap_correction;
+  float continuous_enc_angle = joint_encoder.getAngle();
 
   float raw_q = (continuous_enc_angle / 2.0f);
   float raw_dq = joint_encoder.getVelocity() / 2.0f;

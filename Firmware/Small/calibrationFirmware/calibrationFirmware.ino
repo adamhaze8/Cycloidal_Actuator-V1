@@ -17,9 +17,6 @@ LowsideCurrentSense currentSense = LowsideCurrentSense(0.003f, -64.0f / 7.0f, A_
 const float GEAR_RATIO = 20.0f;
 const float MOTOR_KT = 0.205f;
 
-float boot_wrap_correction = 0.0f;
-float python_zero_offset = 0.0f;
-
 LowPassFilter lpf_q(0.005f);  
 LowPassFilter lpf_dq(0.04f);  
 
@@ -74,10 +71,6 @@ void setup() {
     joint_encoder.update();
     delay(1);
   }
-
-  if (joint_encoder.getAngle() > PI) {
-    boot_wrap_correction = TWO_PI;
-  }
 }
 
 void loop() {
@@ -85,7 +78,7 @@ void loop() {
 
   // --- KINEMATICS ---
   joint_encoder.update();
-  float raw_reading = joint_encoder.getAngle() - boot_wrap_correction;
+  float raw_reading = joint_encoder.getAngle();
 
   // OUTLIER REJECTION FILTER (Ignores PWM noise spikes)
   static float last_valid_angle = 0.0f;
@@ -93,7 +86,7 @@ void loop() {
       last_valid_angle = raw_reading; 
   }
 
-  float raw_q = (last_valid_angle / 2.0f) - python_zero_offset;
+  float raw_q = (last_valid_angle / 2.0f);
   float raw_dq = joint_encoder.getVelocity() / 2.0f;
 
   state.q_curr = lpf_q(raw_q);
