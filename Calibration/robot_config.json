@@ -1,0 +1,85 @@
+{
+  "robot_name": "Aluminum Humanoid V4.1",
+  "actuators": {
+    "L_hip_yaw": {
+      "hw_serial": "066BFF494970535067231810",
+      "zero_offset": 0.5339,
+      "friction": 0.7629,
+      "damping": 0.2208,
+      "motor_type": "G60",
+      "gear_ratio": 20.0
+    },
+    "L_hip_roll": {
+      "hw_serial": "066FFF575154657287133151",
+      "zero_offset": 0.4568,
+      "friction": 1.2879,
+      "damping": 0.3343,
+      "motor_type": "G60",
+      "gear_ratio": 20.0
+    },
+    "L_hip_pitch": {
+      "hw_serial": "066BFF494970535067235219",
+      "zero_offset": -0.1489,
+      "friction": 1.1848,
+      "damping": 0.4884,
+      "motor_type": "G80",
+      "gear_ratio": 16.0
+    },
+    "L_knee": {
+      "hw_serial": "066DFF494970535067235424",
+      "zero_offset": -1.5037,
+      "friction": 0.9031,
+      "damping": 0.2333,
+      "motor_type": "G80",
+      "gear_ratio": 16.0
+    },
+    "L_ankle": {
+      "hw_serial": "0669FF494970535067231820",
+      "zero_offset": 0.046,
+      "friction": 0.9077,
+      "damping": 0.1724,
+      "motor_type": "G80",
+      "gear_ratio": 16.0
+    },
+    "R_hip_yaw": {
+      "hw_serial": "066CFF494970535067234637",
+      "zero_offset": 0.1825,
+      "friction": 1.4127,
+      "damping": 0.3572,
+      "motor_type": "G60",
+      "gear_ratio": 20.0
+    },
+    "R_hip_roll": {
+      "hw_serial": "066CFF494970535067231918",
+      "zero_offset": -0.2011,
+      "friction": 1.3943,
+      "damping": 0.3124,
+      "motor_type": "G60",
+      "gear_ratio": 20.0
+    },
+    "R_hip_pitch": {
+      "hw_serial": "066EFF494970535067243140",
+      "zero_offset": -0.3215,
+      "friction": 1.0195,
+      "damping": 0.2813,
+      "motor_type": "G80",
+      "gear_ratio": 16.0
+    },
+    "R_knee": {
+      "hw_serial": "0667FF494970535067231752",
+      "zero_offset": 0.1871,
+      "friction": 1.2648,
+      "damping": 0.5248,
+      "motor_type": "G80",
+      "gear_ratio": 16.0
+    },
+    "R_ankle": {
+      "hw_serial": "0668FF494970535067231519",
+      "zero_offset": -0.5766,
+      "friction": 1.0644,
+      "damping": 0.199,
+      "motor_type": "G80",
+      "gear_ratio": 16.0
+    }
+  }
+}
