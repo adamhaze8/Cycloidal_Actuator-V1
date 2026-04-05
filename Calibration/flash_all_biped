@@ -1,0 +1,107 @@
+import serial.tools.list_ports
+import json
+import os
+import subprocess
+import time
+
+# --- AUTOMATION CONFIGURATION ---
+CONFIG_FILE = "biped_actuator_config.json" # Make sure this matches your current JSON name
+
+# Your exact Arduino CLI FQBN string:
+FQBN = "STMicroelectronics:stm32:Disco:upload_method=swdMethod"
+
+# Base paths for firmware (relative to this script's location)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FW_BIPED_LARGE = os.path.normpath(os.path.join(BASE_DIR, "..", "Firmware", "Large", "bipedFirmware", "bipedFirmware.ino"))
+FW_BIPED_SMALL = os.path.normpath(os.path.join(BASE_DIR, "..", "Firmware", "Small", "bipedFirmware", "bipedFirmware.ino"))
+
+def load_hardware_map():
+    """Loads the JSON config."""
+    try:
+        with open(CONFIG_FILE, 'r') as f:
+            return json.load(f).get("actuators", {})
+    except Exception as e:
+        print(f"[!] FATAL: Could not load {CONFIG_FILE}. ({e})")
+        exit(1)
+
+def scan_for_targets(hw_config):
+    """Finds ST-Links and maps them to Large/Small firmware paths."""
+    print("Scanning for ST-LINK Motor Controllers...\n")
+    ports = serial.tools.list_ports.comports()
+    targets = []
+    
+    for port in ports:
+        if "STLink" in port.description or "STMicroelectronics" in port.manufacturer:
+            hw_serial = str(port.serial_number)
+            
+            # Cross-reference with JSON
+            for joint_name, data in hw_config.items():
+                if str(data.get("hw_serial")) in hw_serial:
+                    motor_type = data.get("motor_type", "Unknown")
+                    
+                    # Assign the correct firmware path
+                    if motor_type == "G80":
+                        fw_path = FW_BIPED_LARGE
+                    else:
+                        fw_path = FW_BIPED_SMALL
+                        
+                    targets.append({
+                        "joint": joint_name,
+                        "port": port.device,
+                        "type": motor_type,
+                        "fw_path": fw_path
+                    })
+                    break
+                    
+    return targets
+
+def flash_firmware(target):
+    """Compiles and flashes firmware using Arduino CLI."""
+    joint_name = target["joint"]
+    port = target["port"]
+    ino_path = target["fw_path"]
+    
+    print(f"\n[{joint_name}] - {target['type']} on {port}")
+    print(f" -> Flashing: {os.path.basename(ino_path)}")
+    
+    if not os.path.exists(ino_path):
+        print(f" [!] ERROR: Firmware file missing at {ino_path}")
+        return False
+        
+    cmd = ["arduino-cli.exe", "compile", "--upload", "-b", FQBN, "-p", port, ino_path]
+    
+    try:
+        # Using subprocess.run to pipe output so you can see compile progress
+        subprocess.run(cmd, check=True)
+        print(f" [+] Success: {joint_name} flashed and rebooting.")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f" [!] ERROR: Flashing failed for {joint_name}.")
+        return False
+    except FileNotFoundError:
+        print(" [!] ERROR: arduino-cli.exe not found. Is it in your system PATH?")
+        exit(1)
+
+def main():
+    hw_config = load_hardware_map()
+    targets = scan_for_targets(hw_config)
+    
+    if not targets:
+        print("No recognized actuators found connected to this computer.")
+        return
+        
+    print(f"Found {len(targets)} recognized actuators to flash.")
+    print("-" * 50)
+    
+    success_count = 0
+    for target in targets:
+        if flash_firmware(target):
+            success_count += 1
+            time.sleep(2) # Give the STM32 a moment to reboot before hitting the USB bus again
+            
+    print("\n" + "=" * 50)
+    print(f"BATCH FLASH COMPLETE: {success_count}/{len(targets)} Actuators updated to Biped Firmware.")
+    print("=" * 50)
+
+if __name__ == "__main__":
+    main()

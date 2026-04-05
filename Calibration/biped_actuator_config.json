@@ -2,10 +2,10 @@
   "robot_name": "Aluminum Humanoid V4.1",
   "actuators": {
     "L_hip_yaw": {
-      "hw_serial": "066BFF494970535067231810",
-      "zero_offset": 1.5811,
-      "friction": 1.0819,
-      "damping": 0.1552,
+      "hw_serial": "066BFF494970535067233139",
+      "zero_offset": 1.9976,
+      "friction": 1.1157,
+      "damping": 0.1932,
       "motor_type": "G60",
       "gear_ratio": 20.0
     },
@@ -68,8 +68,8 @@
     "R_knee": {
       "hw_serial": "0667FF494970535067231752",
       "zero_offset": 1.2343,
-      "friction": 1.2895,
-      "damping": 0.4971,
+      "friction": 1.2751,
+      "damping": 0.5143,
       "motor_type": "G80",
       "gear_ratio": 16.0
     },

@@ -7,7 +7,7 @@ import json
 
 # --- CONFIGURATION ---
 BAUD_RATE = 115200
-CONFIG_FILE = "robot_config.json"
+CONFIG_FILE = "robot_actuator_config.json"
 
 def get_actuator_from_json(target_serial):
     """Cross-references the connected hardware serial with the JSON config."""

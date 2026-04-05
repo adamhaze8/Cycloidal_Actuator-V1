@@ -74,7 +74,7 @@ def manual_zeroing_tool(port):
     except serial.SerialException:
         print(f"\nError: Could not open {port}. Is it plugged in and not in use?")
     except KeyboardInterrupt:
-        print("\n\nZeroing session closed. Update your robot_config.json!")
+        print("\n\nZeroing session closed. Update your robot_actuator_config.json!")
     finally:
         if 'ser' in locals() and ser.is_open:
             ser.close()

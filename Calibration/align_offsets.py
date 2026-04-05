@@ -1,7 +1,7 @@
 import json
 import math
 
-CONFIG_FILE = "robot_config.json"
+CONFIG_FILE = "robot_actuator_config.json"
 TARGET_ANGLE = math.pi / 2
 INCREMENT = (2 * math.pi) / 6     # The physical symmetry step (pi/3 radians)
 

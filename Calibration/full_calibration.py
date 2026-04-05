@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 # --- AUTOMATION CONFIGURATION ---
 BAUD_RATE = 115200
-CONFIG_FILE = "robot_config.json"
+CONFIG_FILE = "robot_actuator_config.json"
 
 # Your exact Arduino CLI FQBN string:
 FQBN = "STMicroelectronics:stm32:Disco:upload_method=swdMethod"

@@ -23,6 +23,11 @@ LowsideCurrentSense currentSense = LowsideCurrentSense(0.003f, -64.0f / 7.0f, A_
 const float GEAR_RATIO = 20.0f;
 const float MOTOR_KT = 0.205f;
 
+// --- WATCHDOG SETTINGS ---
+unsigned long last_command_time = 0;
+const unsigned long WATCHDOG_TIMEOUT_MS = 500;  // 0.5 seconds without PC comms triggers the damper
+const float SAFE_DAMPING_KD = 5.0f;             // TUNE THIS: Higher = stiffer, slower fall. Lower = faster fall.
+
 // --- 4. LOW-PASS FILTERS ---
 // Tf = Time constant in seconds.
 // A Tf of 0.01 means it takes 10ms to reach ~63% of the true value.
@@ -37,7 +42,7 @@ struct __attribute__((packed)) RLCommand {
   float tau_ff;
 } cmd = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-// 8-Byte Struct: STM32 -> PC
+// 12-Byte Struct: STM32 -> PC
 struct __attribute__((packed)) RLState {
   float q_curr;
   float dq_curr;
@@ -82,6 +87,9 @@ void setup() {
     joint_encoder.update();
     delay(1);
   }
+  
+  // Initialize watchdog timer at boot
+  last_command_time = millis();
 }
 
 void loop() {
@@ -97,6 +105,14 @@ void loop() {
   // --- APPLY THE FILTERS ---
   state.q_curr = lpf_q(raw_q);
   state.dq_curr = lpf_dq(raw_dq);
+
+  // --- SAFETY WATCHDOG ---
+  // If we haven't heard from the PC in 500ms, force pure damper mode
+  if (millis() - last_command_time > WATCHDOG_TIMEOUT_MS) {
+      cmd.kp = 0.0f;
+      cmd.kd = SAFE_DAMPING_KD;
+      cmd.tau_ff = 0.0f;
+  }
 
   // IMPEDANCE CONTROL LAW
   float pos_error = cmd.q_des - state.q_curr;
@@ -128,5 +144,8 @@ void command_interface() {
     Serial2.readBytes((uint8_t*)&cmd, sizeof(RLCommand));
     while (Serial2.available() > 0) Serial2.read();
     Serial2.write((uint8_t*)&state, sizeof(RLState));
+    
+    // VALID COMMAND RECEIVED: Reset the watchdog timer
+    last_command_time = millis();
   }
 }
