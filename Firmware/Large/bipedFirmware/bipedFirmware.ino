@@ -87,7 +87,7 @@ void setup() {
     joint_encoder.update();
     delay(1);
   }
-  
+
   // Initialize watchdog timer at boot
   last_command_time = millis();
 }
@@ -95,33 +95,35 @@ void setup() {
 void loop() {
   motor.loopFOC();
 
-  // TRUE KINEMATICS
+  // --- 1. SENSOR FUSION KINEMATICS ---
   joint_encoder.update();
-  float continuous_enc_angle = joint_encoder.getAngle();
 
-  float raw_q = (continuous_enc_angle / 2.0f);
-  float raw_dq = joint_encoder.getVelocity() / 2.0f;
+  // Position from Absolute PWM Sensor
+  float raw_q = (joint_encoder.getAngle() / 2.0f);
 
-  // --- APPLY THE FILTERS ---
+  // Velocity from Incremental Motor Encoder (Inverted to match joint kinematics)
+  float raw_dq = -(motor.shaft_velocity / GEAR_RATIO);
+
+  // --- 2. APPLY THE FILTERS ---
   state.q_curr = lpf_q(raw_q);
   state.dq_curr = lpf_dq(raw_dq);
 
-  // --- SAFETY WATCHDOG ---
-  // If we haven't heard from the PC in 500ms, force pure damper mode
-  if (millis() - last_command_time > WATCHDOG_TIMEOUT_MS) {
-      cmd.kp = 0.0f;
-      cmd.kd = SAFE_DAMPING_KD;
-      cmd.tau_ff = 0.0f;
+  // --- 3. MICRO-DEADBAND ---
+  // The motor encoder is very clean, so we only need a tiny deadband
+  if (abs(state.dq_curr) < 0.05f) {
+    state.dq_curr = 0.0f;
   }
 
-  // IMPEDANCE CONTROL LAW
+  // --- SAFETY WATCHDOG ---
+  if (millis() - last_command_time > WATCHDOG_TIMEOUT_MS) {
+    cmd.kp = 0.0f;
+    cmd.kd = SAFE_DAMPING_KD;
+    cmd.tau_ff = 0.0f;
+  }
+
+  // --- IMPEDANCE CONTROL LAW ---
   float pos_error = cmd.q_des - state.q_curr;
   float vel_error = 0.0f - state.dq_curr;
-
-  // If the velocity is just sensor noise (e.g., under 1.2 rad/s), ignore it.
-  if (abs(state.dq_curr) < 1.2f) {
-    vel_error = 0.0f;
-  }
 
   float joint_torque_nm = (cmd.kp * pos_error) + (cmd.kd * vel_error) + cmd.tau_ff;
 
@@ -144,7 +146,7 @@ void command_interface() {
     Serial2.readBytes((uint8_t*)&cmd, sizeof(RLCommand));
     while (Serial2.available() > 0) Serial2.read();
     Serial2.write((uint8_t*)&state, sizeof(RLState));
-    
+
     // VALID COMMAND RECEIVED: Reset the watchdog timer
     last_command_time = millis();
   }

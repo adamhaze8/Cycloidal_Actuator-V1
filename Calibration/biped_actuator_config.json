@@ -43,7 +43,7 @@
     },
     "R_hip_yaw": {
       "hw_serial": "066CFF494970535067234637",
-      "zero_offset": 1.2297,
+      "zero_offset": 1.1657,
       "friction": 1.319,
       "damping": 0.3736,
       "motor_type": "G60",
