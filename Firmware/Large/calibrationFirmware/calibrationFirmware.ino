@@ -2,7 +2,7 @@
 
 // --- 1. SENSORS ---
 Encoder motor_encoder = Encoder(PB6, PB7, 1000);
-MagneticSensorPWM joint_encoder = MagneticSensorPWM(PA15, 4, 922);  
+MagneticSensorPWM joint_encoder = MagneticSensorPWM(PA15, 4, 922);
 
 void doA() { motor_encoder.handleA(); }
 void doB() { motor_encoder.handleB(); }
@@ -17,12 +17,16 @@ LowsideCurrentSense currentSense = LowsideCurrentSense(0.003f, -64.0f / 7.0f, A_
 const float GEAR_RATIO = 16.0f;
 const float MOTOR_KT = 0.178f;
 
-float python_zero_offset = 0.0f;
+// --- WATCHDOG SETTINGS (Imported from Biped Firmware) ---
+unsigned long last_command_time = 0;
+const unsigned long WATCHDOG_TIMEOUT_MS = 500;
+const float SAFE_DAMPING_KD = 5.0f;
 
+// --- 4. LOW-PASS FILTERS ---
 LowPassFilter lpf_q(0.005f);  
 LowPassFilter lpf_dq(0.04f);  
 
-// 16-Byte Struct: PC -> STM32
+// 16-Byte Struct: PC -> STM32 (Maintained for Python compatibility)
 struct __attribute__((packed)) RLCommand {
   float q_des;
   float kp;
@@ -30,12 +34,12 @@ struct __attribute__((packed)) RLCommand {
   float tau_ff;
 } cmd = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-// 16-Byte Struct: STM32 -> PC
+// 16-Byte Struct: STM32 -> PC (Maintained for Python compatibility)
 struct __attribute__((packed)) RLState {
   float q_curr;
   float dq_curr;
   float tau_cmd;  
-  float motor_q;  // NEW: The high-confidence incremental motor angle
+  float motor_q; // Essential for encoder cross-referencing in calibration
 } state = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 void setup() {
@@ -60,7 +64,8 @@ void setup() {
 
   motor.PID_current_q.P = 3; motor.PID_current_q.I = 300;
   motor.PID_current_d.P = 3; motor.PID_current_d.I = 300;
-  motor.LPF_current_q.Tf = 0.005f; motor.LPF_current_d.Tf = 0.005f;
+  motor.LPF_current_q.Tf = 0.005f;
+  motor.LPF_current_d.Tf = 0.005f;
 
   motor.current_limit = 12.2;
   motor.voltage_limit = 24.0;
@@ -73,43 +78,52 @@ void setup() {
     joint_encoder.update();
     delay(1);
   }
+
+  // Initialize watchdog timer at boot
+  last_command_time = millis();
 }
 
 void loop() {
   motor.loopFOC();
 
-  // --- KINEMATICS ---
+  // --- 1. SENSOR FUSION KINEMATICS ---
   joint_encoder.update();
-  float raw_reading = joint_encoder.getAngle();
 
-  // OUTLIER REJECTION FILTER (Ignores PWM noise spikes)
-  static float last_valid_angle = 0.0f;
-  if (abs(raw_reading - last_valid_angle) < 0.5f || last_valid_angle == 0.0f) {
-      last_valid_angle = raw_reading; 
-  }
+  // Position from Absolute PWM Sensor (Clean 1:1 mapping)
+  float raw_q = (joint_encoder.getAngle() / 2.0f);
+  
+  // Velocity from Incremental Motor Encoder (Clean, inverted to match kinematics)
+  float raw_dq = -(motor.shaft_velocity / GEAR_RATIO);
 
-  float raw_q = (last_valid_angle / 2.0f) - python_zero_offset;
-  float raw_dq = joint_encoder.getVelocity() / 2.0f;
-
+  // --- 2. APPLY THE FILTERS ---
   state.q_curr = lpf_q(raw_q);
   state.dq_curr = lpf_dq(raw_dq);
-  
-  // NEW: Grab the raw motor angle for PC cross-referencing
-  state.motor_q = motor_encoder.getAngle();
+  state.motor_q = motor_encoder.getAngle(); // Keep raw motor angle for PC script
 
-  // --- IMPEDANCE CONTROL LAW ---
+  // --- 3. MICRO-DEADBAND ---
+  // Motor encoder is clean enough to drop from 1.2f to 0.05f
+  if (abs(state.dq_curr) < 0.05f) {
+    state.dq_curr = 0.0f;
+  }
+
+  // --- 4. SAFETY WATCHDOG ---
+  if (millis() - last_command_time > WATCHDOG_TIMEOUT_MS) {
+    cmd.kp = 0.0f;
+    cmd.kd = SAFE_DAMPING_KD;
+    cmd.tau_ff = 0.0f;
+  }
+
+  // --- 5. IMPEDANCE CONTROL LAW ---
   float pos_error = cmd.q_des - state.q_curr;
   float vel_error = 0.0f - state.dq_curr;
-
-  // Velocity Deadband
-  if (abs(state.dq_curr) < 1.2f) { vel_error = 0.0f; }
 
   float joint_torque_nm = (cmd.kp * pos_error) + (cmd.kd * vel_error) + cmd.tau_ff;
   state.tau_cmd = joint_torque_nm;
 
-  // --- GEARING & CURRENT CONVERSION ---
+  // --- 6. GEARING & CURRENT CONVERSION ---
   float motor_torque_nm = joint_torque_nm / GEAR_RATIO;
   float current_command = motor_torque_nm / MOTOR_KT;
+
   motor.move(-current_command);
 
   command_interface();
@@ -120,5 +134,8 @@ void command_interface() {
     Serial2.readBytes((uint8_t*)&cmd, sizeof(RLCommand));
     while (Serial2.available() > 0) Serial2.read();
     Serial2.write((uint8_t*)&state, sizeof(RLState));
+    
+    // VALID COMMAND RECEIVED: Reset the watchdog timer
+    last_command_time = millis();
   }
 }

@@ -2,17 +2,12 @@
 
 // --- 1. SENSORS ---
 Encoder motor_encoder = Encoder(PB6, PB7, 1000);
-MagneticSensorPWM joint_encoder = MagneticSensorPWM(PA15, 4, 922);  // Using our calibrated 922us max
+MagneticSensorPWM joint_encoder = MagneticSensorPWM(PA15, 4, 922);
+// Using our calibrated 922us max
 
-void doA() {
-  motor_encoder.handleA();
-}
-void doB() {
-  motor_encoder.handleB();
-}
-void doPWM() {
-  joint_encoder.handlePWM();
-}
+void doA() { motor_encoder.handleA(); }
+void doB() { motor_encoder.handleB(); }
+void doPWM() { joint_encoder.handlePWM(); }
 
 // --- 2. HARDWARE INSTANCES ---
 BLDCDriver6PWM driver = BLDCDriver6PWM(A_PHASE_UH, A_PHASE_UL, A_PHASE_VH, A_PHASE_VL, A_PHASE_WH, A_PHASE_WL);
@@ -25,28 +20,29 @@ const float MOTOR_KT = 0.178f;
 
 // --- WATCHDOG SETTINGS ---
 unsigned long last_command_time = 0;
-const unsigned long WATCHDOG_TIMEOUT_MS = 500;  // 0.5 seconds without PC comms triggers the damper
-const float SAFE_DAMPING_KD = 5.0f;             // TUNE THIS: Higher = stiffer, slower fall. Lower = faster fall.
+const unsigned long WATCHDOG_TIMEOUT_MS = 500;
+// 0.5 seconds without PC comms triggers the damper
+const float SAFE_DAMPING_KD = 5.0f;
+// TUNE THIS: Higher = stiffer, slower fall. Lower = faster fall.
 
 // --- 4. LOW-PASS FILTERS ---
 // Tf = Time constant in seconds.
 // A Tf of 0.01 means it takes 10ms to reach ~63% of the true value.
-LowPassFilter lpf_q(0.005f);  // Extremely light filter on position (5ms delay max)
-LowPassFilter lpf_dq(0.04f);  // Stronger filter on velocity (40ms delay) to smooth kd
+LowPassFilter lpf_q(0.005f); // Extremely light filter on position (5ms delay max)
+LowPassFilter lpf_dq(0.04f); // Stronger filter on velocity (40ms delay) to smooth kd
 
-// 16-Byte Struct: PC -> STM32
+// 12-Byte Struct: PC -> STM32 (Optimized for pure impedance RL)
 struct __attribute__((packed)) RLCommand {
   float q_des;
   float kp;
   float kd;
-  float tau_ff;
-} cmd = { 0.0f, 0.0f, 0.0f, 0.0f };
+} cmd = { 0.0f, 0.0f, 0.0f };
 
 // 12-Byte Struct: STM32 -> PC
 struct __attribute__((packed)) RLState {
   float q_curr;
   float dq_curr;
-  float tau_cmd;  // NEW: The exact effort applied by the impedance law
+  float tau_cmd; // The exact effort applied by the impedance law
 } state = { 0.0f, 0.0f, 0.0f };
 
 void setup() {
@@ -69,14 +65,11 @@ void setup() {
   motor.controller = MotionControlType::torque;
   motor.torque_controller = TorqueControlType::foc_current;
 
-  motor.PID_current_q.P = 3;
-  motor.PID_current_q.I = 300;
-  motor.PID_current_d.P = 3;
-  motor.PID_current_d.I = 300;
-  motor.LPF_current_q.Tf = 0.005f;
-  motor.LPF_current_d.Tf = 0.005f;
+  motor.PID_current_q.P = 3; motor.PID_current_q.I = 300;
+  motor.PID_current_d.P = 3; motor.PID_current_d.I = 300;
+  motor.LPF_current_q.Tf = 0.005f; motor.LPF_current_d.Tf = 0.005f;
 
-  motor.current_limit = 12.2;
+  motor.current_limit = 12.2; // G80 Spec
   motor.voltage_limit = 24.0;
   motor.voltage_sensor_align = 4.0;
 
@@ -100,7 +93,7 @@ void loop() {
 
   // Position from Absolute PWM Sensor
   float raw_q = (joint_encoder.getAngle() / 2.0f);
-
+  
   // Velocity from Incremental Motor Encoder (Inverted to match joint kinematics)
   float raw_dq = -(motor.shaft_velocity / GEAR_RATIO);
 
@@ -114,26 +107,26 @@ void loop() {
     state.dq_curr = 0.0f;
   }
 
-  // --- SAFETY WATCHDOG ---
+  // --- 4. SAFETY WATCHDOG ---
   if (millis() - last_command_time > WATCHDOG_TIMEOUT_MS) {
     cmd.kp = 0.0f;
     cmd.kd = SAFE_DAMPING_KD;
-    cmd.tau_ff = 0.0f;
   }
 
-  // --- IMPEDANCE CONTROL LAW ---
+  // --- 5. IMPEDANCE CONTROL LAW ---
   float pos_error = cmd.q_des - state.q_curr;
   float vel_error = 0.0f - state.dq_curr;
 
-  float joint_torque_nm = (cmd.kp * pos_error) + (cmd.kd * vel_error) + cmd.tau_ff;
-
+  // Pure PD control, no feedforward
+  float joint_torque_nm = (cmd.kp * pos_error) + (cmd.kd * vel_error);
+  
   // Save the effort for telemetry BEFORE converting to motor amps
   state.tau_cmd = joint_torque_nm;
 
-  // GEARING & CURRENT CONVERSION
+  // --- 6. GEARING & CURRENT CONVERSION ---
   float motor_torque_nm = joint_torque_nm / GEAR_RATIO;
   float current_command = motor_torque_nm / MOTOR_KT;
-
+  
   // Command Motor
   motor.move(-current_command);
 
