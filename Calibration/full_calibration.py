@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 # --- AUTOMATION CONFIGURATION ---
 BAUD_RATE = 115200
-CONFIG_FILE = "robot_actuator_config.json"
+CONFIG_FILE = "biped_actuator_config.json"
 
 # Your exact Arduino CLI FQBN string:
 FQBN = "STMicroelectronics:stm32:Disco:upload_method=swdMethod"
@@ -228,7 +228,7 @@ def run_friction_calibration(port):
     # --- Phase 2: Generate Dynamic Test Points ---
     # Create 4 test points, starting one full increment ABOVE breakaway.
     # This guarantees the motor is safely in the kinetic friction zone.
-    torque_step = 0.2  # Nm to increment each test by
+    torque_step = 0.1  # Nm to increment each test by
     test_torques = [round(breakaway_tau + (i * torque_step), 2) for i in range(1, 5)]
     
     print(f"Generated dynamic test points: {test_torques} Nm\n")

@@ -10,34 +10,34 @@
       "gear_ratio": 20.0
     },
     "L_hip_roll": {
-      "hw_serial": "066FFF575154657287133151",
-      "zero_offset": 1.504,
-      "friction": 1.1525,
-      "damping": 0.4116,
+      "hw_serial": "0669FF494970535067230925",
+      "zero_offset": 1.1376,
+      "friction": 1.1573,
+      "damping": 0.4346,
       "motor_type": "G60",
       "gear_ratio": 20.0
     },
     "L_hip_pitch": {
-      "hw_serial": "066BFF494970535067235219",
-      "zero_offset": 1.9455,
-      "friction": 1.1848,
-      "damping": 0.4884,
+      "hw_serial": "0672FF494970535067233055",
+      "zero_offset": 1.4072,
+      "friction": 1.4055,
+      "damping": 0.3674,
       "motor_type": "G80",
       "gear_ratio": 16.0
     },
     "L_knee": {
-      "hw_serial": "066DFF494970535067235424",
-      "zero_offset": 1.6379,
-      "friction": 0.8883,
-      "damping": 0.2667,
+      "hw_serial": "066AFF494970535067234638",
+      "zero_offset": 1.346,
+      "friction": 0.9714,
+      "damping": 0.2163,
       "motor_type": "G80",
       "gear_ratio": 16.0
     },
     "L_ankle": {
-      "hw_serial": "0669FF494970535067231820",
-      "zero_offset": 1.0932,
-      "friction": 0.8272,
-      "damping": 0.2075,
+      "hw_serial": "066EFF494970535067234626",
+      "zero_offset": 1.658,
+      "friction": 0.5405,
+      "damping": 0.2669,
       "motor_type": "G80",
       "gear_ratio": 16.0
     },

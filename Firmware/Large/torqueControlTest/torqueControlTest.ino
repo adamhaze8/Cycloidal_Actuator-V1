@@ -89,7 +89,7 @@ void loop() {
 
   // Command 0.5 Amps of torque
   // With Kt = 0.356, this is ~0.178 Nm of torque
-  motor.move(0.55);
+  motor.move(0.5);
 
   command.run();
 

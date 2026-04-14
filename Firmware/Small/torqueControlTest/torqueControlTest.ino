@@ -87,7 +87,7 @@ void loop() {
   motor.loopFOC();
 
   // Command 0.5 Amps of torque
-  motor.move(0.5);
+  motor.move(0.8);
 
   command.run();
 

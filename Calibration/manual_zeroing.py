@@ -40,36 +40,26 @@ def manual_zeroing_tool(port):
         ser.reset_output_buffer()
 
         while True:
-            # 1. SEND LIMP COMMAND (16 Bytes)
+            # 1. SEND LIMP COMMAND (16 Bytes: q_des, kp, kd, tau_ff)
             cmd_data = struct.pack('<ffff', 0.0, 0.0, 0.0, 0.0)
             ser.write(cmd_data)
             
-            # Give the firmware a tiny fraction of a second to process and reply
             time.sleep(0.05) 
 
-            # 2. TELEMETRY-AGNOSTIC READ
+            # 2. READ TELEMETRY (Expecting 16 Bytes from calibrationFirmware)
             bytes_waiting = ser.in_waiting
-            if bytes_waiting >= 4:
+            if bytes_waiting >= 16:
                 state_data = ser.read(bytes_waiting)
-                ser.reset_input_buffer() # Flush to maintain instant sync
+                ser.reset_input_buffer() 
                 
-                # 3. UNPACK DYNAMICALLY BASED ON AVAILABLE BYTES
-                if len(state_data) >= 16:
-                    # Full Calibration Firmware (Unpack all 4 floats)
-                    q_curr, dq_curr, tau_cmd, motor_q = struct.unpack('<ffff', state_data[:16])
-                    
-                    # Calculate raw output encoder angle (0 to 2PI)
-                    raw_encoder = (q_curr * 2.0) % (2 * math.pi)
-                    
-                    print(f"\r      {q_curr:>8.4f} rad            |     {raw_encoder:>8.4f} rad     |  {dq_curr:>8.4f} rad/s | {tau_cmd:>6.2f} Nm  |  {motor_q:>8.4f} rad", end="")
-                else:
-                    # Biped Firmware (Unpack only the first float, ignore the rest)
-                    q_curr = struct.unpack('<f', state_data[:4])[0]
-                    
-                    # Calculate raw output encoder angle (0 to 2PI)
-                    raw_encoder = (q_curr * 2.0) % (2 * math.pi)
-                    
-                    print(f"\r      {q_curr:>8.4f} rad            |     {raw_encoder:>8.4f} rad     |  {'N/A':>8}        | {'N/A':>6}      |  {'N/A':>8}    ", end="")
+                # 3. UNPACK 16 BYTES (RLState: q_curr, dq_curr, tau_cmd, motor_q)
+                # Using [-16:] ensures we grab the freshest packet if multiple piled up
+                q_curr, dq_curr, tau_cmd, motor_q = struct.unpack('<ffff', state_data[-16:])
+                
+                # Calculate raw output encoder angle (0 to 2PI)
+                raw_encoder = (q_curr * 2.0) % (2 * math.pi)
+                
+                print(f"\r      {q_curr:>8.4f} rad            |     {raw_encoder:>8.4f} rad     |  {dq_curr:>8.4f} rad/s | {tau_cmd:>6.2f} Nm  |  {motor_q:>8.4f}    ", end="")
 
     except serial.SerialException:
         print(f"\nError: Could not open {port}. Is it plugged in and not in use?")
