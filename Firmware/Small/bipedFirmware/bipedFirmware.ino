@@ -70,7 +70,7 @@ void setup() {
   motor.LPF_current_q.Tf = 0.005f; motor.LPF_current_d.Tf = 0.005f;
 
   motor.current_limit = 6.57; // G60 Spec
-  motor.voltage_limit = 24.0;
+  motor.voltage_limit = 16.1;
   motor.voltage_sensor_align = 4.0;
 
   motor.init();
