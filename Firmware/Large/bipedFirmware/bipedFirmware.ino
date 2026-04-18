@@ -22,14 +22,8 @@ const float MOTOR_KT = 0.178f;
 unsigned long last_command_time = 0;
 const unsigned long WATCHDOG_TIMEOUT_MS = 500;
 // 0.5 seconds without PC comms triggers the damper
-const float SAFE_DAMPING_KD = 5.0f;
+const float SAFE_DAMPING_KD = 7.0f;
 // TUNE THIS: Higher = stiffer, slower fall. Lower = faster fall.
-
-// --- 4. LOW-PASS FILTERS ---
-// Tf = Time constant in seconds.
-// A Tf of 0.01 means it takes 10ms to reach ~63% of the true value.
-LowPassFilter lpf_q(0.005f); // Extremely light filter on position (5ms delay max)
-LowPassFilter lpf_dq(0.04f); // Stronger filter on velocity (40ms delay) to smooth kd
 
 // 12-Byte Struct: PC -> STM32 (Optimized for pure impedance RL)
 struct __attribute__((packed)) RLCommand {
@@ -96,16 +90,6 @@ void loop() {
   
   // Velocity from Incremental Motor Encoder (Inverted to match joint kinematics)
   float raw_dq = -(motor.shaft_velocity / GEAR_RATIO);
-
-  // --- 2. APPLY THE FILTERS ---
-  state.q_curr = lpf_q(raw_q);
-  state.dq_curr = lpf_dq(raw_dq);
-
-  // --- 3. MICRO-DEADBAND ---
-  // The motor encoder is very clean, so we only need a tiny deadband
-  if (abs(state.dq_curr) < 0.05f) {
-    state.dq_curr = 0.0f;
-  }
 
   // --- 4. SAFETY WATCHDOG ---
   if (millis() - last_command_time > WATCHDOG_TIMEOUT_MS) {
