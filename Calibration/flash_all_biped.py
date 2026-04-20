@@ -68,20 +68,22 @@ def pre_compile_firmwares(targets):
     needs_small = any(t["type"] != "G80" for t in targets)
 
     print("==================================================")
-    print(" PRE-COMPILING FIRMWARES")
+    print(" PRE-COMPILING FIRMWARES (CLEAN BUILD)")
     print("==================================================")
 
     if needs_large:
         print(" -> Compiling Large (G80) Firmware...")
         os.makedirs(BUILD_DIR_LARGE, exist_ok=True)
-        cmd = f'arduino-cli compile -b {FQBN} --output-dir "{BUILD_DIR_LARGE}" "{FW_BIPED_LARGE}"'
+        # Added --clean flag to force a fresh build
+        cmd = f'arduino-cli compile --clean -b {FQBN} --output-dir "{BUILD_DIR_LARGE}" "{FW_BIPED_LARGE}"'
         subprocess.run(cmd, check=True, shell=True, capture_output=True)
         print("    [+] Large compilation successful.")
 
     if needs_small:
         print(" -> Compiling Small (G60) Firmware...")
         os.makedirs(BUILD_DIR_SMALL, exist_ok=True)
-        cmd = f'arduino-cli compile -b {FQBN} --output-dir "{BUILD_DIR_SMALL}" "{FW_BIPED_SMALL}"'
+        # Added --clean flag to force a fresh build
+        cmd = f'arduino-cli compile --clean -b {FQBN} --output-dir "{BUILD_DIR_SMALL}" "{FW_BIPED_SMALL}"'
         subprocess.run(cmd, check=True, shell=True, capture_output=True)
         print("    [+] Small compilation successful.")
 

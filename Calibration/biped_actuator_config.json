@@ -12,8 +12,8 @@
     "L_hip_roll": {
       "hw_serial": "0669FF494970535067230925",
       "zero_offset": 1.1376,
-      "friction": 1.1573,
-      "damping": 0.4346,
+      "friction": 1.8524,
+      "damping": 0.6143,
       "motor_type": "G60",
       "gear_ratio": 20.0
     },
@@ -52,8 +52,8 @@
     "R_hip_roll": {
       "hw_serial": "066CFF494970535067231918",
       "zero_offset": 1.8933,
-      "friction": 1.4126,
-      "damping": 0.3132,
+      "friction": 1.6939,
+      "damping": 0.2154,
       "motor_type": "G60",
       "gear_ratio": 20.0
     },

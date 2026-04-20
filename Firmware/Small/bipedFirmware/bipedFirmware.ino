@@ -86,10 +86,10 @@ void loop() {
   joint_encoder.update();
 
   // Position from Absolute PWM Sensor
-  float raw_q = (joint_encoder.getAngle() / 2.0f);
+  state.q_curr = (joint_encoder.getAngle() / 2.0f);
   
   // Velocity from Incremental Motor Encoder (Inverted to match joint kinematics)
-  float raw_dq = -(motor.shaft_velocity / GEAR_RATIO);
+  state.dq_curr = -(motor.shaft_velocity / GEAR_RATIO);
 
   // --- 4. SAFETY WATCHDOG ---
   if (millis() - last_command_time > WATCHDOG_TIMEOUT_MS) {
