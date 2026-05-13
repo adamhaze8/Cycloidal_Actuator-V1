@@ -52,16 +52,16 @@
     "R_hip_roll": {
       "hw_serial": "066CFF494970535067231918",
       "zero_offset": 1.0835,
-      "friction": 1.3913,
-      "damping": 0.1275,
+      "friction": 1.6908,
+      "damping": 0.3079,
       "motor_type": "G60",
       "gear_ratio": 20.0
     },
     "R_hip_pitch": {
       "hw_serial": "066EFF494970535067243140",
-      "zero_offset": 1.7729,
-      "friction": 1.0514,
-      "damping": 0.2538,
+      "zero_offset": 1.353,
+      "friction": 0.5998,
+      "damping": 0.6633,
       "motor_type": "G80",
       "gear_ratio": 16.0
     },
