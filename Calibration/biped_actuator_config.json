@@ -3,17 +3,17 @@
   "actuators": {
     "L_hip_yaw": {
       "hw_serial": "066BFF494970535067233139",
-      "zero_offset": 1.8072,
-      "friction": 1.1346,
-      "damping": 0.2677,
+      "zero_offset": 1.7951,
+      "friction": 0.8299,
+      "damping": 0.2027,
       "motor_type": "G60",
       "gear_ratio": 20.0
     },
     "L_hip_roll": {
       "hw_serial": "0669FF494970535067230925",
-      "zero_offset": 0.9945,
-      "friction": 1.0452,
-      "damping": 0.2872,
+      "zero_offset": 1.9732,
+      "friction": 0.9878,
+      "damping": 0.3139,
       "motor_type": "G60",
       "gear_ratio": 20.0
     },
@@ -42,18 +42,18 @@
       "gear_ratio": 16.0
     },
     "R_hip_yaw": {
-      "hw_serial": "066CFF494970535067234637",
-      "zero_offset": 1.1657,
-      "friction": 1.319,
-      "damping": 0.3736,
+      "hw_serial": "066CFF494970535067231918",
+      "zero_offset": 1.8333,
+      "friction": 1.8595,
+      "damping": 0.237,
       "motor_type": "G60",
       "gear_ratio": 20.0
     },
     "R_hip_roll": {
-      "hw_serial": "066CFF494970535067231918",
-      "zero_offset": 1.0835,
-      "friction": 1.6908,
-      "damping": 0.3079,
+      "hw_serial": "066CFF494970535067234637",
+      "zero_offset": 1.2727,
+      "friction": 1.0465,
+      "damping": 0.2125,
       "motor_type": "G60",
       "gear_ratio": 20.0
     },
