@@ -12,24 +12,24 @@
     "L_hip_roll": {
       "hw_serial": "0669FF494970535067230925",
       "zero_offset": 1.9732,
-      "friction": 0.9878,
-      "damping": 0.3139,
+      "friction": 1.2324,
+      "damping": 0.2772,
       "motor_type": "G60",
       "gear_ratio": 20.0
     },
     "L_hip_pitch": {
       "hw_serial": "0672FF494970535067233055",
-      "zero_offset": 1.4072,
-      "friction": 1.4055,
-      "damping": 0.3674,
+      "zero_offset": 1.4233,
+      "friction": 1.0863,
+      "damping": 0.4043,
       "motor_type": "G80",
       "gear_ratio": 16.0
     },
     "L_knee": {
       "hw_serial": "066AFF494970535067234638",
-      "zero_offset": 1.346,
-      "friction": 0.9714,
-      "damping": 0.2163,
+      "zero_offset": 1.4725,
+      "friction": 0.8496,
+      "damping": 0.2371,
       "motor_type": "G80",
       "gear_ratio": 16.0
     },
@@ -59,17 +59,17 @@
     },
     "R_hip_pitch": {
       "hw_serial": "066EFF494970535067243140",
-      "zero_offset": 1.353,
-      "friction": 0.5998,
-      "damping": 0.6633,
+      "zero_offset": 2.0409,
+      "friction": 0.7865,
+      "damping": 0.4299,
       "motor_type": "G80",
       "gear_ratio": 16.0
     },
     "R_knee": {
-      "hw_serial": "0667FF494970535067231752",
-      "zero_offset": 1.2343,
-      "friction": 1.2751,
-      "damping": 0.5143,
+      "hw_serial": "0670FF494970535067235233",
+      "zero_offset": 1.3329,
+      "friction": 1.0569,
+      "damping": 0.6435,
       "motor_type": "G80",
       "gear_ratio": 16.0
     },

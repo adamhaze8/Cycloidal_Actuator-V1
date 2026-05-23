@@ -3,14 +3,14 @@ import math
 # ==========================================
 #   USER CONFIGURATION
 # ==========================================
-BELT_LENGTH = 180  # The specific belt length (mm)
+BELT_LENGTH = 200  # The specific belt length (mm)
 TARGET_RATIO = 2.0  # Desired Ratio (e.g., 2.0 for 2:1)
 MIN_CENTER_DIST = 35  # Minimum allowed distance (mm)
 MAX_CENTER_DIST = 45 # Maximum allowed distance (mm)
 
 # GT2 Specs
 PITCH = 2.0  # Distance between teeth (mm)
-PITCH_LINE_OFFSET = 0.51  # Reduction to get Outside Diameter (mm)
+PITCH_LINE_OFFSET = 0.508  # Reduction to get Outside Diameter (mm)
 
 # ==========================================
 #   CALCULATION LOGIC
