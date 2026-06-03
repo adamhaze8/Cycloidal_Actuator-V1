@@ -26,10 +26,10 @@
       "gear_ratio": 16.0
     },
     "L_knee": {
-      "hw_serial": "066AFF494970535067234638",
-      "zero_offset": 1.4725,
-      "friction": 0.8496,
-      "damping": 0.2371,
+      "hw_serial": "0669FF515266555067013944",
+      "zero_offset": 1.2654,
+      "friction": 0.6786,
+      "damping": 0.4161,
       "motor_type": "G80",
       "gear_ratio": 16.0
     },
